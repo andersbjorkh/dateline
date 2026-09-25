@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dateline</title>
+<meta name="description" content="The single most important thing that happened on today's date in history, plus every other year that shares it.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23123a3d'/%3E%3Cpath d='M7 22h18M9 22V12m5 10V8m5 14v-7m5 7V10' stroke='%23e5b25d' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;800;900&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+<style>
+:root {
+  --bg: #eef2f1;
+  --surface: #f8faf9;
+  --ink: #13211f;
+  --ink-2: #435451;
+  --ink-3: #6f7f7c;
+  --rule: #cdd8d5;
+  --accent: #0f5f5a;
+  --accent-soft: #d5e7e4;
+  --brass: #a8741c;
+  --brass-soft: #f1e4c8;
+  --mark: #9fb3af;
+  --shadow: 0 1px 2px rgb(19 33 31 / .06), 0 8px 28px rgb(19 33 31 / .07);
+  --display: "Big Shoulders Display", "Arial Narrow", "Roboto Condensed", Impact, sans-serif;
+  --serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1515;
+    --surface: #142120;
+    --ink: #e6efed;
+    --ink-2: #aebdba;
+    --ink-3: #7f918d;
+    --rule: #26393a;
+    --accent: #5fc2b8;
+    --accent-soft: #173634;
+    --brass: #e5b25d;
+    --brass-soft: #3a2e17;
+    --mark: #3f5654;
+    --shadow: 0 1px 2px rgb(0 0 0 / .3), 0 10px 30px rgb(0 0 0 / .35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1515;
+  --surface: #142120;
+  --ink: #e6efed;
+  --ink-2: #aebdba;
+  --ink-3: #7f918d;
+  --rule: #26393a;
+  --accent: #5fc2b8;
+  --accent-soft: #173634;
+  --brass: #e5b25d;
+  --brass-soft: #3a2e17;
+  --mark: #3f5654;
+  --shadow: 0 1px 2px rgb(0 0 0 / .3), 0 10px 30px rgb(0 0 0 / .35);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.55;
+  padding-inline: 16px;
+}
+a { color: var(--accent); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+a:hover { text-decoration-thickness: 2px; }
+button, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; border-radius: 4px; }
+[hidden] { display: none !important; }
+
+.wrap { max-width: 1080px; margin-inline: auto; }
+
+/* Top bar: date navigator */
+.bar {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 10;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--rule);
+  margin-inline: -16px;
+  padding: 10px 16px;
+}
+.bar .wrap { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.brand {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  margin-right: auto;
+  display: flex; align-items: center; gap: 8px;
+}
+.brand svg { width: 22px; height: 22px; flex: none; }
+.nav { display: flex; align-items: center; gap: 6px; }
+.btn {
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  border-radius: 8px;
+  height: 38px;
+  min-width: 38px;
+  padding: 0 12px;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 13px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  transition: border-color .15s, background .15s;
+}
+.btn:hover { border-color: var(--accent); }
+.btn[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.btn svg { width: 16px; height: 16px; }
+.datepick {
+  position: relative;
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  min-width: 132px;
+}
+.datepick input {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%;
+}
+
+main { padding-block: 28px 64px; }
+
+/* Hero: the headline */
+.kicker {
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center;
+}
+.kicker .pill {
+  background: var(--brass-soft);
+  color: var(--brass);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-weight: 500;
+}
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 300px);
+  gap: 32px;
+  align-items: start;
+  margin-top: 14px;
+}
+.year {
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: clamp(96px, 20vw, 220px);
+  line-height: .82;
+  letter-spacing: -.01em;
+  color: var(--ink);
+  margin: 0;
+  display: flex; align-items: baseline; gap: .12em;
+  font-variant-numeric: tabular-nums;
+}
+.year .era { font-size: .32em; font-weight: 800; color: var(--brass); letter-spacing: .04em; }
+.ago {
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--accent);
+  margin-top: 10px;
+}
+.headline {
+  font-size: clamp(22px, 2.6vw, 30px);
+  line-height: 1.32;
+  font-weight: 500;
+  margin: 18px 0 0;
+  max-width: 34em;
+  text-wrap: pretty;
+}
+.subject {
+  margin-top: 16px;
+  font-size: 16px;
+  color: var(--ink-2);
+  display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline;
+}
+.subject a { font-weight: 600; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.chip {
+  font-family: var(--mono);
+  font-size: 12px;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 3px 10px;
+  text-decoration: none;
+  color: var(--ink-2);
+  background: var(--surface);
+}
+.chip:hover { color: var(--accent); border-color: var(--accent); }
+.plate {
+  margin: 0;
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 10px;
+  box-shadow: var(--shadow);
+  transform: rotate(1.2deg);
+}
+.plate img {
+  display: block;
+  width: 100%;
+  max-height: 380px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: var(--accent-soft);
+}
+.plate figcaption {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  padding: 8px 4px 2px;
+  letter-spacing: .02em;
+}
+
+/* Timeline ruler */
+.section-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  margin-top: 56px;
+  border-top: 2px solid var(--ink);
+  padding-top: 12px;
+}
+.section-head h2 {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  margin: 0;
+}
+.section-head p { margin: 0; font-family: var(--mono); font-size: 13px; color: var(--ink-3); }
+.ruler-box { overflow-x: auto; margin-top: 16px; }
+.ruler { position: relative; height: 92px; min-width: 640px; }
+.ruler .axis { position: absolute; left: 0; right: 0; top: 54px; height: 1px; background: var(--ink-2); }
+.ruler .tick { position: absolute; top: 54px; width: 1px; height: 8px; background: var(--ink-2); }
+.ruler .tlabel {
+  position: absolute; top: 66px; transform: translateX(-50%);
+  font-family: var(--mono); font-size: 11px; color: var(--ink-3); white-space: nowrap;
+}
+.ruler .ev {
+  position: absolute; bottom: 38px; width: 3px; margin-left: -1.5px;
+  background: var(--mark); border: 0; padding: 0; cursor: pointer; border-radius: 2px;
+  transition: background .15s, transform .15s;
+}
+.ruler .ev:hover, .ruler .ev:focus-visible { background: var(--accent); transform: scaleX(1.8); }
+.ruler .ev.top { background: var(--brass); width: 5px; margin-left: -2.5px; }
+.ruler .flag {
+  position: absolute; top: 0; transform: translateX(-50%);
+  font-family: var(--mono); font-size: 11px; font-weight: 500;
+  color: var(--brass); white-space: nowrap;
+}
+
+/* Event list */
+.tools { display: flex; gap: 6px; flex-wrap: wrap; }
+.list { list-style: none; margin: 18px 0 0; padding: 0; }
+.century {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 26px 0 6px;
+  display: flex; align-items: center; gap: 12px;
+}
+.century::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
+.row {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr) 118px;
+  gap: 16px;
+  padding: 12px 10px;
+  border-radius: 10px;
+  align-items: start;
+  scroll-margin-top: 90px;
+}
+.row:target, .row.flash { background: var(--accent-soft); }
+.row.is-top { background: var(--brass-soft); }
+.row .y {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 26px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  padding-top: 2px;
+}
+.row .y small { font-size: 13px; color: var(--brass); margin-left: 2px; }
+.row .t { font-size: 17px; line-height: 1.5; }
+.row .t a { color: inherit; text-decoration-color: var(--rule); }
+.row .t a:hover { text-decoration-color: var(--accent); }
+.row .badge {
+  display: inline-block;
+  font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--brass); margin-right: 6px;
+}
+.reach { font-family: var(--mono); font-size: 11px; color: var(--ink-3); padding-top: 6px; }
+.reach .meter { height: 4px; background: var(--rule); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+.reach .meter i { display: block; height: 100%; background: var(--accent); border-radius: 2px; }
+.promote {
+  border: 0; background: none; padding: 0; margin-top: 6px; cursor: pointer;
+  font-family: var(--mono); font-size: 11px; color: var(--ink-3); text-decoration: underline; text-underline-offset: 3px;
+}
+.promote:hover { color: var(--accent); }
+
+footer {
+  border-top: 1px solid var(--rule);
+  margin-top: 56px;
+  padding-top: 16px;
+  font-size: 14px;
+  color: var(--ink-3);
+}
+footer p { margin: 0 0 8px; max-width: 60em; }
+.status { font-family: var(--mono); font-size: 14px; color: var(--ink-3); padding: 60px 0; }
+
+@media (max-width: 760px) {
+  body { font-size: 17px; }
+  .hero { grid-template-columns: 1fr; gap: 22px; }
+  .plate { max-width: 360px; transform: rotate(.8deg); }
+  .row { grid-template-columns: 64px minmax(0, 1fr); gap: 12px; padding: 12px 6px; }
+  .row .y { font-size: 22px; }
+  .reach { grid-column: 2; padding-top: 0; }
+  .brand span { display: none; }
+  .datepick { min-width: 118px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero-in { animation: rise .5s cubic-bezier(.2,.7,.2,1) both; }
+  @keyframes rise { from { opacity: .001; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+}
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="wrap">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="var(--accent)"/><path d="M7 22h18M9 22V12m5 10V8m5 14v-7m5 7V10" stroke="var(--brass)" stroke-width="2.4" stroke-linecap="round" fill="none"/></svg>
+      <span>Dateline</span>
+    </div>
+    <div class="nav">
+      <button class="btn" id="prev" type="button" aria-label="Previous day"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3 5 8l5 5"/></svg></button>
+      <label class="btn datepick" id="dateLabel">
+        <span id="dateText">—</span>
+        <input type="date" id="dateInput" aria-label="Choose a date">
+      </label>
+      <button class="btn" id="next" type="button" aria-label="Next day"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 3 5 5-5 5"/></svg></button>
+      <button class="btn" id="today" type="button">Today</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="status" id="status">Loading the almanac…</div>
+
+  <section id="heroSec" hidden>
+    <div class="kicker">
+      <span class="pill" id="kDate">—</span>
+      <span>The most important thing that happened on this date</span>
+    </div>
+    <div class="hero hero-in" id="hero">
+      <div>
+        <h1 class="year" id="hYear">—</h1>
+        <div class="ago" id="hAgo"></div>
+        <p class="headline" id="hText"></p>
+        <div class="subject" id="hSubject"></div>
+        <div class="chips" id="hLinks"></div>
+      </div>
+      <figure class="plate" id="hPlate" hidden>
+        <img id="hImg" alt="">
+        <figcaption id="hCap"></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="rulerSec" hidden>
+    <div class="section-head">
+      <h2>Every year on this date</h2>
+      <p id="rulerNote"></p>
+    </div>
+    <div class="ruler-box"><div class="ruler" id="ruler" role="group" aria-label="Events on this date placed on a timeline"></div></div>
+  </section>
+
+  <section id="listSec" hidden>
+    <div class="section-head">
+      <h2>The record</h2>
+      <div class="tools" role="group" aria-label="Filter and sort">
+        <button class="btn" type="button" id="fCurated" aria-pressed="false">Curated only</button>
+        <button class="btn" type="button" id="sOld" aria-pressed="true">Oldest first</button>
+        <button class="btn" type="button" id="sNew" aria-pressed="false">Newest first</button>
+      </div>
+    </div>
+    <ol class="list" id="list"></ol>
+  </section>
+
+  <footer>
+    <p>Events come from Wikipedia's “On this day” feed. The headline for each date is an editorial pick from the day's best-covered events; “languages” counts how many Wikipedia editions have an article on the event's main subject. Text is available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener">CC BY-SA 4.0</a>; images come from Wikimedia Commons, and each links to its article.</p>
+    <p>Link to any date by adding it to the address, for example <a href="#07-20">#07-20</a>.</p>
+  </footer>
+</main>
+
+<script>
+(() => {
+  const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const $ = (id) => document.getElementById(id);
+  const cache = {};
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+  };
+  const state = {
+    m: 1, d: 1,
+    curatedOnly: store.get("dl.curated") === "1",
+    newestFirst: store.get("dl.newest") === "1",
+    promoted: null,
+  };
+  const now = new Date();
+  const THIS_YEAR = now.getFullYear();
+
+  const pad = (n) => String(n).padStart(2, "0");
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const yearLabel = (y) => (y < 0 ? { n: String(-y), era: "BC" } : { n: String(y), era: y < 1000 ? "AD" : "" });
+  const yearsAgo = (y) => THIS_YEAR - y - (y < 0 ? 1 : 0);
+  const daysIn = (m) => [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m - 1];
+
+  function shift(delta) {
+    // Walk the 366-day almanac (Feb 29 included), wrapping at year end.
+    let { m, d } = state;
+    d += delta;
+    if (d < 1) { m = m === 1 ? 12 : m - 1; d = daysIn(m); }
+    else if (d > daysIn(m)) { m = m === 12 ? 1 : m + 1; d = 1; }
+    go(m, d);
+  }
+
+  function go(m, d, { push = true } = {}) {
+    state.m = m; state.d = d; state.promoted = null;
+    const tag = `${pad(m)}-${pad(d)}`;
+    if (push && location.hash.slice(1) !== tag) history.replaceState(null, "", `#${tag}`);
+    render();
+  }
+
+  async function load(m) {
+    if (!cache[m]) {
+      cache[m] = fetch(`data/${pad(m)}.json`).then((r) => {
+        if (!r.ok) throw new Error(r.status);
+        return r.json();
+      });
+    }
+    return cache[m];
+  }
+
+  // Timeline scale: compress deep antiquity so recent centuries get room.
+  const f = (y) => -Math.log(2100 - y);
+  const X0 = f(-3200), X1 = f(THIS_YEAR + 4);
+  const pos = (y) => ((f(y) - X0) / (X1 - X0)) * 100;
+  const TICKS = [-3000, -1000, 0, 500, 1000, 1500, 1700, 1800, 1900, 1950, 2000];
+
+  async function render() {
+    const { m, d } = state;
+    $("dateText").textContent = `${MONTHS[m - 1].slice(0, 3)} ${d}`;
+    $("dateInput").value = `${THIS_YEAR}-${pad(m)}-${pad(d)}`;
+    document.title = `${MONTHS[m - 1]} ${d} · Dateline`;
+
+    let day;
+    try {
+      day = (await load(m))[pad(d)];
+    } catch (e) {
+      $("status").hidden = false;
+      $("status").textContent = "Couldn't load this month's events. Check your connection and reload the page.";
+      return;
+    }
+    if (state.m !== m || state.d !== d) return; // a newer navigation won
+    $("status").hidden = true;
+    ["heroSec", "rulerSec", "listSec"].forEach((id) => ($(id).hidden = false));
+
+    const events = day.events;
+    const topIdx = state.promoted ?? day.top;
+    const top = events[topIdx];
+    renderHero(top, topIdx === day.top ? day.img : null, m, d, topIdx === day.top);
+    renderRuler(events, topIdx);
+    renderList(events, topIdx, day.top);
+  }
+
+  function renderHero(ev, img, m, d, isPick) {
+    const hero = $("hero");
+    hero.classList.remove("hero-in"); void hero.offsetWidth; hero.classList.add("hero-in");
+    $("kDate").textContent = `${MONTHS[m - 1]} ${d}`;
+    const yl = yearLabel(ev.y);
+    $("hYear").innerHTML = `${esc(yl.n)}${yl.era ? `<span class="era">${yl.era}</span>` : ""}`;
+    const ago = yearsAgo(ev.y);
+    $("hAgo").textContent = ago === 0 ? "This year" : ago === 1 ? "1 year ago" : `${ago.toLocaleString()} years ago`;
+    $("hText").textContent = ev.text;
+    $("hSubject").innerHTML = ev.main
+      ? `<span>Read: <a href="${esc(ev.main.url)}" target="_blank" rel="noopener">${esc(ev.main.t)}</a></span>` +
+        (ev.main.desc ? `<span>${esc(ev.main.desc)}</span>` : "") +
+        (ev.score ? `<span>${ev.score} Wikipedia languages</span>` : "")
+      : "";
+    $("hLinks").innerHTML = (ev.links || [])
+      .map((l) => `<a class="chip" href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.t)}</a>`)
+      .join("");
+    if (img) {
+      $("hImg").src = img;
+      $("hImg").alt = ev.main ? ev.main.t : "";
+      $("hCap").textContent = ev.main ? `${ev.main.t} · Wikimedia Commons` : "Wikimedia Commons";
+      $("hPlate").hidden = false;
+    } else {
+      $("hPlate").hidden = true;
+    }
+    $("kDate").nextElementSibling.textContent = isPick
+      ? "The most important thing that happened on this date"
+      : "Your pick for this date";
+  }
+
+  function renderRuler(events, topIdx) {
+    const r = $("ruler");
+    const maxScore = Math.max(1, ...events.map((e) => e.score));
+    let html = '<div class="axis"></div>';
+    for (const t of TICKS) {
+      const x = pos(t);
+      const lbl = t < 0 ? `${-t} BC` : t === 0 ? "AD 1" : String(t);
+      const edge = x < 4 ? ";transform:none" : x > 96 ? ";transform:translateX(-100%)" : "";
+      html += `<div class="tick" style="left:${x}%"></div><div class="tlabel" style="left:${x}%${edge}">${lbl}</div>`;
+    }
+    events.forEach((e, i) => {
+      const h = 8 + Math.round((e.score / maxScore) * 34);
+      const yl = yearLabel(e.y);
+      html += `<button type="button" class="ev${i === topIdx ? " top" : ""}" style="left:${pos(e.y)}%;height:${h}px" data-i="${i}" aria-label="${esc(yl.n + (yl.era ? " " + yl.era : ""))}: ${esc(e.text.slice(0, 90))}" title="${esc(yl.n + (yl.era ? " " + yl.era : ""))} — ${esc(e.text.slice(0, 120))}"></button>`;
+    });
+    const t = events[topIdx];
+    const tl = yearLabel(t.y);
+    html += `<div class="flag" style="left:${Math.min(96, Math.max(4, pos(t.y)))}%">▼ ${esc(tl.n)}${tl.era ? " " + tl.era : ""}</div>`;
+    r.innerHTML = html;
+    const span = events.length ? `${events.length} events, ${yearsLabel(events[0].y)} to ${yearsLabel(events[events.length - 1].y)}` : "";
+    $("rulerNote").textContent = `${span} · taller marks = covered in more languages`;
+  }
+  const yearsLabel = (y) => { const l = yearLabel(y); return l.n + (l.era ? " " + l.era : ""); };
+
+  function centuryOf(y) {
+    if (y < 0) { const c = Math.floor((-y - 1) / 100) + 1; return `${ordinal(c)} century BC`; }
+    const c = Math.floor((y - 1) / 100) + 1;
+    return `${ordinal(c)} century`;
+  }
+  function ordinal(n) {
+    const s = ["th", "st", "nd", "rd"], v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  }
+
+  function renderList(events, topIdx, pickIdx) {
+    const maxScore = Math.max(1, ...events.map((e) => e.score));
+    let idx = events.map((_, i) => i);
+    if (state.curatedOnly) idx = idx.filter((i) => events[i].sel || i === topIdx);
+    if (state.newestFirst) idx.reverse();
+    let html = "", lastC = "";
+    for (const i of idx) {
+      const e = events[i];
+      const c = centuryOf(e.y);
+      if (c !== lastC) { html += `<li class="century">${c}</li>`; lastC = c; }
+      const yl = yearLabel(e.y);
+      const subj = e.main ? `<a href="${esc(e.main.url)}" target="_blank" rel="noopener">${esc(e.text)}</a>` : esc(e.text);
+      const badge = i === topIdx ? `<span class="badge">★ Headline</span>` : e.sel ? `<span class="badge" style="color:var(--accent)">Curated</span>` : "";
+      const pct = Math.round((e.score / maxScore) * 100);
+      html += `<li class="row${i === topIdx ? " is-top" : ""}" id="ev-${i}">
+        <div class="y">${esc(yl.n)}${yl.era ? `<small>${yl.era}</small>` : ""}</div>
+        <div class="t">${badge}${subj}</div>
+        <div class="reach">${e.score ? `${e.score} languages` : "—"}<div class="meter"><i style="width:${pct}%"></i></div>
+          ${i !== topIdx ? `<button type="button" class="promote" data-i="${i}">Make headline</button>` : i !== pickIdx ? `<button type="button" class="promote" data-reset="1">Restore pick</button>` : ""}
+        </div>
+      </li>`;
+    }
+    $("list").innerHTML = html;
+    $("fCurated").setAttribute("aria-pressed", String(state.curatedOnly));
+    $("sOld").setAttribute("aria-pressed", String(!state.newestFirst));
+    $("sNew").setAttribute("aria-pressed", String(state.newestFirst));
+  }
+
+  // Wiring
+  $("prev").addEventListener("click", () => shift(-1));
+  $("next").addEventListener("click", () => shift(1));
+  $("today").addEventListener("click", () => go(now.getMonth() + 1, now.getDate()));
+  $("dateInput").addEventListener("change", (e) => {
+    const [, m, d] = (e.target.value || "").split("-").map(Number);
+    if (m && d) go(m, d);
+  });
+  $("dateLabel").addEventListener("click", () => {
+    try { $("dateInput").showPicker(); } catch {}
+  });
+  $("fCurated").addEventListener("click", () => { state.curatedOnly = !state.curatedOnly; store.set("dl.curated", state.curatedOnly ? "1" : "0"); render(); });
+  $("sOld").addEventListener("click", () => { state.newestFirst = false; store.set("dl.newest", "0"); render(); });
+  $("sNew").addEventListener("click", () => { state.newestFirst = true; store.set("dl.newest", "1"); render(); });
+  $("list").addEventListener("click", (e) => {
+    const b = e.target.closest(".promote");
+    if (!b) return;
+    state.promoted = b.dataset.reset ? null : Number(b.dataset.i);
+    render().then(() => window.scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }));
+  });
+  $("ruler").addEventListener("click", (e) => {
+    const b = e.target.closest(".ev");
+    if (!b) return;
+    let row = $(`ev-${b.dataset.i}`);
+    if (!row && state.curatedOnly) { state.curatedOnly = false; render().then(() => flash(b.dataset.i)); return; }
+    flash(b.dataset.i);
+  });
+  function flash(i) {
+    const row = $(`ev-${i}`);
+    if (!row) return;
+    row.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+    row.classList.add("flash");
+    setTimeout(() => row.classList.remove("flash"), 1600);
+  }
+  document.addEventListener("keydown", (e) => {
+    if (e.target.closest("input")) return;
+    if (e.key === "ArrowLeft") shift(-1);
+    if (e.key === "ArrowRight") shift(1);
+  });
+  window.addEventListener("hashchange", () => {
+    const t = parseHash();
+    if (t && (t.m !== state.m || t.d !== state.d)) go(t.m, t.d, { push: false });
+  });
+  function parseHash() {
+    const m = /^#?(\d{2})-(\d{2})$/.exec(location.hash);
+    if (!m) return null;
+    const mm = +m[1], dd = +m[2];
+    return mm >= 1 && mm <= 12 && dd >= 1 && dd <= daysIn(mm) ? { m: mm, d: dd } : null;
+  }
+
+  const start = parseHash() || { m: now.getMonth() + 1, d: now.getDate() };
+  go(start.m, start.d, { push: false });
+})();
+</script>
+</body>
+</html>
