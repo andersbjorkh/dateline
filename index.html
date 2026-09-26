@@ -6,6 +6,12 @@
 <title>Dateline</title>
 <meta name="description" content="The single most important thing that happened on today's date in history, plus every other year that shares it.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23123a3d'/%3E%3Cpath d='M7 22h18M9 22V12m5 10V8m5 14v-7m5 7V10' stroke='%23e5b25d' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#eef2f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1515" media="(prefers-color-scheme: dark)">
+<script>
+  // Apply a saved theme before first paint so the page doesn't flash.
+  try { const t = localStorage.getItem("dl.theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch {}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;800;900&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
@@ -136,6 +142,14 @@ button, input { font: inherit; color: inherit; }
 .lang .btn { min-width: 42px; padding: 0 10px; }
 .lang .btn:first-child { border-radius: 8px 0 0 8px; }
 .lang .btn:last-child { border-radius: 0 8px 8px 0; margin-left: -1px; }
+.theme { padding: 0; }
+.theme .sun { display: none; }
+:root[data-theme="dark"] .theme .sun { display: block; }
+:root[data-theme="dark"] .theme .moon { display: none; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .theme .sun { display: block; }
+  :root:not([data-theme="light"]) .theme .moon { display: none; }
+}
 
 main { padding-block: 28px 64px; }
 
@@ -339,7 +353,7 @@ footer p { margin: 0 0 8px; max-width: 60em; }
   .brand span { display: none; }
   /* Brand and language share the first row; the date navigator wraps below. */
   .brand { order: -2; }
-  .lang { order: -1; }
+  .lang, .theme { order: -1; }
   .row { scroll-margin-top: 130px; }
   .datepick { min-width: 118px; }
 }
@@ -369,6 +383,10 @@ footer p { margin: 0 0 8px; max-width: 60em; }
       <button class="btn" type="button" data-lang="en" lang="en" title="English" aria-pressed="true">EN</button>
       <button class="btn" type="button" data-lang="no" lang="nb" title="Norsk" aria-pressed="false">NO</button>
     </div>
+    <button class="btn theme" id="theme" type="button">
+      <svg class="moon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.5 9.6A5.8 5.8 0 0 1 6.4 2.5a5.8 5.8 0 1 0 7.1 7.1Z"/></svg>
+      <svg class="sun" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="3"/><path d="M8 1.5v1.3M8 13.2v1.3M1.5 8h1.3M13.2 8h1.3M3.4 3.4l.9.9M11.7 11.7l.9.9M3.4 12.6l.9-.9M11.7 4.3l.9-.9"/></svg>
+    </button>
   </div>
 </header>
 
@@ -439,6 +457,7 @@ footer p { margin: 0 0 8px; max-width: 60em; }
       bc: "BC", ad: "AD", tickZero: "AD 1",
       prev: "Previous day", next: "Next day", pick: "Choose a date", today: "Today",
       langAria: "Language",
+      toDark: "Switch to dark mode", toLight: "Switch to light mode",
       loading: "Loading the almanac…",
       loadError: "Couldn't load this month's events. Check your connection and reload the page.",
       kickerPick: "The most important thing that happened on this date",
@@ -472,6 +491,7 @@ footer p { margin: 0 0 8px; max-width: 60em; }
       bc: "f.Kr.", ad: "e.Kr.", tickZero: "1 e.Kr.",
       prev: "Forrige dag", next: "Neste dag", pick: "Velg dato", today: "I dag",
       langAria: "Språk",
+      toDark: "Bytt til mørk modus", toLight: "Bytt til lys modus",
       loading: "Henter almanakken…",
       loadError: "Kunne ikke hente hendelsene for denne måneden. Sjekk tilkoblingen og last inn siden på nytt.",
       kickerPick: "Det viktigste som skjedde på denne datoen",
@@ -525,6 +545,16 @@ footer p { margin: 0 0 8px; max-width: 60em; }
     document.querySelectorAll("[data-i18n-aria]").forEach((el) => el.setAttribute("aria-label", t[el.dataset.i18nAria]));
     document.querySelectorAll("#lang [data-lang]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === state.lang)));
     $("footer").innerHTML = t.footer;
+    labelTheme();
+  }
+
+  // Theme: follows the system until the user picks one with the toggle.
+  const darkQuery = matchMedia("(prefers-color-scheme: dark)");
+  const isDark = () => (document.documentElement.dataset.theme || (darkQuery.matches ? "dark" : "light")) === "dark";
+  function labelTheme() {
+    const label = isDark() ? T().toLight : T().toDark;
+    $("theme").setAttribute("aria-label", label);
+    $("theme").title = label;
   }
 
   function shift(delta) {
@@ -730,6 +760,13 @@ footer p { margin: 0 0 8px; max-width: 60em; }
     applyLang();
     render();
   });
+  $("theme").addEventListener("click", () => {
+    const next = isDark() ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    store.set("dl.theme", next);
+    labelTheme();
+  });
+  darkQuery.addEventListener("change", labelTheme);
   $("fCurated").addEventListener("click", () => { state.curatedOnly = !state.curatedOnly; store.set("dl.curated", state.curatedOnly ? "1" : "0"); render(); });
   $("sOld").addEventListener("click", () => { state.newestFirst = false; store.set("dl.newest", "0"); render(); });
   $("sNew").addEventListener("click", () => { state.newestFirst = true; store.set("dl.newest", "1"); render(); });
