@@ -132,6 +132,10 @@ button, input { font: inherit; color: inherit; }
 .datepick input {
   position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%;
 }
+.lang { display: flex; }
+.lang .btn { min-width: 42px; padding: 0 10px; }
+.lang .btn:first-child { border-radius: 8px 0 0 8px; }
+.lang .btn:last-child { border-radius: 0 8px 8px 0; margin-left: -1px; }
 
 main { padding-block: 28px 64px; }
 
@@ -333,6 +337,10 @@ footer p { margin: 0 0 8px; max-width: 60em; }
   .row .y { font-size: 22px; }
   .reach { grid-column: 2; padding-top: 0; }
   .brand span { display: none; }
+  /* Brand and language share the first row; the date navigator wraps below. */
+  .brand { order: -2; }
+  .lang { order: -1; }
+  .row { scroll-margin-top: 130px; }
   .datepick { min-width: 118px; }
 }
 @media (prefers-reduced-motion: no-preference) {
@@ -349,24 +357,28 @@ footer p { margin: 0 0 8px; max-width: 60em; }
       <span>Dateline</span>
     </div>
     <div class="nav">
-      <button class="btn" id="prev" type="button" aria-label="Previous day"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3 5 8l5 5"/></svg></button>
+      <button class="btn" id="prev" type="button" aria-label="Previous day" data-i18n-aria="prev"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3 5 8l5 5"/></svg></button>
       <label class="btn datepick" id="dateLabel">
         <span id="dateText">—</span>
-        <input type="date" id="dateInput" aria-label="Choose a date">
+        <input type="date" id="dateInput" aria-label="Choose a date" data-i18n-aria="pick">
       </label>
-      <button class="btn" id="next" type="button" aria-label="Next day"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 3 5 5-5 5"/></svg></button>
-      <button class="btn" id="today" type="button">Today</button>
+      <button class="btn" id="next" type="button" aria-label="Next day" data-i18n-aria="next"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 3 5 5-5 5"/></svg></button>
+      <button class="btn" id="today" type="button" data-i18n="today">Today</button>
+    </div>
+    <div class="lang" id="lang" role="group" aria-label="Language" data-i18n-aria="langAria">
+      <button class="btn" type="button" data-lang="en" lang="en" title="English" aria-pressed="true">EN</button>
+      <button class="btn" type="button" data-lang="no" lang="nb" title="Norsk" aria-pressed="false">NO</button>
     </div>
   </div>
 </header>
 
 <main class="wrap">
-  <div class="status" id="status">Loading the almanac…</div>
+  <div class="status" id="status" data-i18n="loading">Loading the almanac…</div>
 
   <section id="heroSec" hidden>
     <div class="kicker">
       <span class="pill" id="kDate">—</span>
-      <span>The most important thing that happened on this date</span>
+      <span id="kNote"></span>
     </div>
     <div class="hero hero-in" id="hero">
       <div>
@@ -385,53 +397,135 @@ footer p { margin: 0 0 8px; max-width: 60em; }
 
   <section id="rulerSec" hidden>
     <div class="section-head">
-      <h2>Every year on this date</h2>
+      <h2 data-i18n="everyYear">Every year on this date</h2>
       <p id="rulerNote"></p>
     </div>
-    <div class="ruler-box"><div class="ruler" id="ruler" role="group" aria-label="Events on this date placed on a timeline"></div></div>
+    <div class="ruler-box"><div class="ruler" id="ruler" role="group" aria-label="Events on this date placed on a timeline" data-i18n-aria="rulerAria"></div></div>
   </section>
 
   <section id="listSec" hidden>
     <div class="section-head">
-      <h2>The record</h2>
-      <div class="tools" role="group" aria-label="Filter and sort">
-        <button class="btn" type="button" id="fCurated" aria-pressed="false">Curated only</button>
-        <button class="btn" type="button" id="sOld" aria-pressed="true">Oldest first</button>
-        <button class="btn" type="button" id="sNew" aria-pressed="false">Newest first</button>
+      <h2 data-i18n="record">The record</h2>
+      <div class="tools" role="group" aria-label="Filter and sort" data-i18n-aria="toolsAria">
+        <button class="btn" type="button" id="fCurated" aria-pressed="false" data-i18n="curatedOnly">Curated only</button>
+        <button class="btn" type="button" id="sOld" aria-pressed="true" data-i18n="oldest">Oldest first</button>
+        <button class="btn" type="button" id="sNew" aria-pressed="false" data-i18n="newest">Newest first</button>
       </div>
     </div>
     <ol class="list" id="list"></ol>
   </section>
 
-  <footer>
-    <p>Events come from Wikipedia's “On this day” feed. The headline for each date is an editorial pick from the day's best-covered events; “languages” counts how many Wikipedia editions have an article on the event's main subject. Text is available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener">CC BY-SA 4.0</a>; images come from Wikimedia Commons, and each links to its article.</p>
-    <p>Link to any date by adding it to the address, for example <a href="#07-20">#07-20</a>.</p>
-  </footer>
+  <footer id="footer"></footer>
 </main>
 
 <script>
 (() => {
-  const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
   const $ = (id) => document.getElementById(id);
   const cache = {};
   const store = {
     get(k) { try { return localStorage.getItem(k); } catch { return null; } },
     set(k, v) { try { localStorage.setItem(k, v); } catch {} },
   };
+
+  // Interface strings. Event text comes from English Wikipedia in both
+  // languages; in Norwegian, article links point to no.wikipedia.org when an
+  // article exists there.
+  const I18N = {
+    en: {
+      locale: "en",
+      months: ["January","February","March","April","May","June","July","August","September","October","November","December"],
+      date: (m, d) => `${I18N.en.months[m - 1]} ${d}`,
+      dateShort: (m, d) => `${I18N.en.months[m - 1].slice(0, 3)} ${d}`,
+      bc: "BC", ad: "AD", tickZero: "AD 1",
+      prev: "Previous day", next: "Next day", pick: "Choose a date", today: "Today",
+      langAria: "Language",
+      loading: "Loading the almanac…",
+      loadError: "Couldn't load this month's events. Check your connection and reload the page.",
+      kickerPick: "The most important thing that happened on this date",
+      kickerYours: "Your pick for this date",
+      thisYear: "This year",
+      ago: (n, s) => (n === 1 ? "1 year ago" : `${s} years ago`),
+      read: "Read:",
+      wpLangs: (n) => `${n} Wikipedia languages`,
+      langs: (n) => `${n} languages`,
+      everyYear: "Every year on this date",
+      rulerAria: "Events on this date placed on a timeline",
+      rulerNote: (n, from, to) => `${n} events, ${from} to ${to} · taller marks = covered in more languages`,
+      record: "The record",
+      toolsAria: "Filter and sort",
+      curatedOnly: "Curated only", oldest: "Oldest first", newest: "Newest first",
+      headline: "Headline", curated: "Curated",
+      makeHeadline: "Make headline", restorePick: "Restore pick",
+      century(y) {
+        const ordinal = (n) => { const s = ["th", "st", "nd", "rd"], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
+        if (y < 0) return `${ordinal(Math.floor((-y - 1) / 100) + 1)} century BC`;
+        return `${ordinal(Math.floor((y - 1) / 100) + 1)} century`;
+      },
+      footer: `<p>Events come from Wikipedia's “On this day” feed. The headline for each date is an editorial pick from the day's best-covered events; “languages” counts how many Wikipedia editions have an article on the event's main subject. Text is available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener">CC BY-SA 4.0</a>; images come from Wikimedia Commons, and each links to its article.</p>
+        <p>Link to any date by adding it to the address, for example <a href="#07-20">#07-20</a>.</p>`,
+    },
+    no: {
+      locale: "nb-NO",
+      months: ["januar","februar","mars","april","mai","juni","juli","august","september","oktober","november","desember"],
+      date: (m, d) => `${d}. ${I18N.no.months[m - 1]}`,
+      dateShort: (m, d) => `${d}. ${I18N.no.months[m - 1].slice(0, 3)}`,
+      bc: "f.Kr.", ad: "e.Kr.", tickZero: "1 e.Kr.",
+      prev: "Forrige dag", next: "Neste dag", pick: "Velg dato", today: "I dag",
+      langAria: "Språk",
+      loading: "Henter almanakken…",
+      loadError: "Kunne ikke hente hendelsene for denne måneden. Sjekk tilkoblingen og last inn siden på nytt.",
+      kickerPick: "Det viktigste som skjedde på denne datoen",
+      kickerYours: "Ditt valg for denne datoen",
+      thisYear: "I år",
+      ago: (n, s) => `for ${s} år siden`,
+      read: "Les:",
+      wpLangs: (n) => `${n} Wikipedia-språk`,
+      langs: (n) => `${n} språk`,
+      everyYear: "Hvert år på denne datoen",
+      rulerAria: "Hendelser på denne datoen plassert på en tidslinje",
+      rulerNote: (n, from, to) => `${n} hendelser, ${from} til ${to} · høyere streker = omtalt på flere språk`,
+      record: "Arkivet",
+      toolsAria: "Filtrer og sorter",
+      curatedOnly: "Bare utvalgte", oldest: "Eldste først", newest: "Nyeste først",
+      headline: "Hovedsak", curated: "Utvalgt",
+      makeHeadline: "Gjør til hovedsak", restorePick: "Gjenopprett valget",
+      // Norwegian counts centuries by their hundreds: 1969 is in "1900-tallet".
+      century: (y) => (y < 0 ? `${Math.floor(-y / 100) * 100}-tallet f.Kr.` : `${Math.floor(y / 100) * 100}-tallet`),
+      footer: `<p>Hendelsene kommer fra Wikipedias «On this day»-feed og står på engelsk. Lenkene går til norsk Wikipedia når artikkelen finnes der. Hovedsaken for hver dato er håndplukket blant dagens best dekkede hendelser; «språk» teller hvor mange Wikipedia-utgaver som har en artikkel om hendelsens hovedtema. Teksten er tilgjengelig under <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.no" rel="noopener">CC BY-SA 4.0</a>; bildene kommer fra Wikimedia Commons og lenker til sin artikkel.</p>
+        <p>Lenk til en hvilken som helst dato ved å legge den til adressen, for eksempel <a href="#07-20">#07-20</a>.</p>`,
+    },
+  };
+  const initialLang = () => {
+    const saved = store.get("dl.lang");
+    if (saved === "en" || saved === "no") return saved;
+    return /^(nb|nn|no)\b/i.test(navigator.language || "") ? "no" : "en";
+  };
+
   const state = {
     m: 1, d: 1,
+    lang: initialLang(),
     curatedOnly: store.get("dl.curated") === "1",
     newestFirst: store.get("dl.newest") === "1",
     promoted: null,
   };
+  const T = () => I18N[state.lang];
   const now = new Date();
   const THIS_YEAR = now.getFullYear();
 
   const pad = (n) => String(n).padStart(2, "0");
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const yearLabel = (y) => (y < 0 ? { n: String(-y), era: "BC" } : { n: String(y), era: y < 1000 ? "AD" : "" });
+  const yearLabel = (y) => (y < 0 ? { n: String(-y), era: T().bc } : { n: String(y), era: y < 1000 ? T().ad : "" });
   const yearsAgo = (y) => THIS_YEAR - y - (y < 0 ? 1 : 0);
   const daysIn = (m) => [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m - 1];
+
+  function applyLang() {
+    const t = T();
+    document.documentElement.lang = state.lang === "no" ? "nb" : "en";
+    document.querySelectorAll("[data-i18n]").forEach((el) => (el.textContent = t[el.dataset.i18n]));
+    document.querySelectorAll("[data-i18n-aria]").forEach((el) => el.setAttribute("aria-label", t[el.dataset.i18nAria]));
+    document.querySelectorAll("#lang [data-lang]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === state.lang)));
+    $("footer").innerHTML = t.footer;
+  }
 
   function shift(delta) {
     // Walk the 366-day almanac (Feb 29 included), wrapping at year end.
@@ -459,6 +553,42 @@ footer p { margin: 0 0 8px; max-width: 60em; }
     return cache[m];
   }
 
+  // English article title -> { t, url } on Norwegian Wikipedia, or null when
+  // there is no Norwegian article. Looked up only when Norwegian is chosen.
+  const noArticles = {};
+  async function lookupNorwegian(titles) {
+    const todo = [...new Set(titles)].filter((t) => !(t in noArticles));
+    const chunks = [];
+    for (let i = 0; i < todo.length; i += 50) chunks.push(todo.slice(i, i + 50));
+    await Promise.all(chunks.map(async (chunk) => {
+      const url = "https://en.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&origin=*" +
+        "&redirects=1&prop=langlinks&lllang=no&lllimit=max&llprop=url&titles=" + encodeURIComponent(chunk.join("|"));
+      try {
+        const q = (await (await fetch(url)).json()).query || {};
+        const alias = {};
+        for (const r of [...(q.normalized || []), ...(q.redirects || [])]) alias[r.from] = r.to;
+        const pages = Object.fromEntries((q.pages || []).map((p) => [p.title, p]));
+        for (const t of chunk) {
+          let title = t;
+          for (let i = 0; i < 3 && alias[title]; i++) title = alias[title];
+          const ll = pages[title]?.langlinks?.[0];
+          noArticles[t] = ll ? { t: ll.title, url: ll.url } : null;
+        }
+      } catch {} // Keep the English links; the next render tries again.
+    }));
+  }
+  // Wikipedia links carry data-wt (their English title); data-swap also
+  // replaces the link text with the Norwegian title.
+  function localizeLinks() {
+    document.querySelectorAll("a[data-wt]").forEach((a) => {
+      const no = noArticles[a.dataset.wt];
+      if (!no) return;
+      a.href = no.url;
+      a.hreflang = "nb";
+      if ("swap" in a.dataset) a.textContent = no.t;
+    });
+  }
+
   // Timeline scale: compress deep antiquity so recent centuries get room.
   const f = (y) => -Math.log(2100 - y);
   const X0 = f(-3200), X1 = f(THIS_YEAR + 4);
@@ -466,20 +596,21 @@ footer p { margin: 0 0 8px; max-width: 60em; }
   const TICKS = [-3000, -1000, 0, 500, 1000, 1500, 1700, 1800, 1900, 1950, 2000];
 
   async function render() {
-    const { m, d } = state;
-    $("dateText").textContent = `${MONTHS[m - 1].slice(0, 3)} ${d}`;
+    const { m, d, lang } = state;
+    const t = T();
+    $("dateText").textContent = t.dateShort(m, d);
     $("dateInput").value = `${THIS_YEAR}-${pad(m)}-${pad(d)}`;
-    document.title = `${MONTHS[m - 1]} ${d} · Dateline`;
+    document.title = `${t.date(m, d)} · Dateline`;
 
     let day;
     try {
       day = (await load(m))[pad(d)];
     } catch (e) {
       $("status").hidden = false;
-      $("status").textContent = "Couldn't load this month's events. Check your connection and reload the page.";
+      $("status").textContent = t.loadError;
       return;
     }
-    if (state.m !== m || state.d !== d) return; // a newer navigation won
+    if (state.m !== m || state.d !== d || state.lang !== lang) return; // a newer navigation won
     $("status").hidden = true;
     ["heroSec", "rulerSec", "listSec"].forEach((id) => ($(id).hidden = false));
 
@@ -489,24 +620,31 @@ footer p { margin: 0 0 8px; max-width: 60em; }
     renderHero(top, topIdx === day.top ? day.img : null, m, d, topIdx === day.top);
     renderRuler(events, topIdx);
     renderList(events, topIdx, day.top);
+
+    if (lang === "no") {
+      const titles = events.flatMap((e) => (e.main ? [e.main.t] : [])).concat((top.links || []).map((l) => l.t));
+      await lookupNorwegian(titles);
+      if (state.m === m && state.d === d && state.lang === lang) localizeLinks();
+    }
   }
 
   function renderHero(ev, img, m, d, isPick) {
+    const t = T();
     const hero = $("hero");
     hero.classList.remove("hero-in"); void hero.offsetWidth; hero.classList.add("hero-in");
-    $("kDate").textContent = `${MONTHS[m - 1]} ${d}`;
+    $("kDate").textContent = t.date(m, d);
     const yl = yearLabel(ev.y);
     $("hYear").innerHTML = `${esc(yl.n)}${yl.era ? `<span class="era">${yl.era}</span>` : ""}`;
     const ago = yearsAgo(ev.y);
-    $("hAgo").textContent = ago === 0 ? "This year" : ago === 1 ? "1 year ago" : `${ago.toLocaleString()} years ago`;
+    $("hAgo").textContent = ago === 0 ? t.thisYear : t.ago(ago, ago.toLocaleString(t.locale));
     $("hText").textContent = ev.text;
     $("hSubject").innerHTML = ev.main
-      ? `<span>Read: <a href="${esc(ev.main.url)}" target="_blank" rel="noopener">${esc(ev.main.t)}</a></span>` +
-        (ev.main.desc ? `<span>${esc(ev.main.desc)}</span>` : "") +
-        (ev.score ? `<span>${ev.score} Wikipedia languages</span>` : "")
+      ? `<span>${t.read} <a href="${esc(ev.main.url)}" data-wt="${esc(ev.main.t)}" data-swap target="_blank" rel="noopener">${esc(ev.main.t)}</a></span>` +
+        (ev.main.desc ? `<span lang="en">${esc(ev.main.desc)}</span>` : "") +
+        (ev.score ? `<span>${t.wpLangs(ev.score)}</span>` : "")
       : "";
     $("hLinks").innerHTML = (ev.links || [])
-      .map((l) => `<a class="chip" href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.t)}</a>`)
+      .map((l) => `<a class="chip" href="${esc(l.url)}" data-wt="${esc(l.t)}" data-swap target="_blank" rel="noopener">${esc(l.t)}</a>`)
       .join("");
     if (img) {
       $("hImg").src = img;
@@ -516,46 +654,36 @@ footer p { margin: 0 0 8px; max-width: 60em; }
     } else {
       $("hPlate").hidden = true;
     }
-    $("kDate").nextElementSibling.textContent = isPick
-      ? "The most important thing that happened on this date"
-      : "Your pick for this date";
+    $("hText").lang = "en";
+    $("kNote").textContent = isPick ? t.kickerPick : t.kickerYours;
   }
 
   function renderRuler(events, topIdx) {
+    const t = T();
     const r = $("ruler");
     const maxScore = Math.max(1, ...events.map((e) => e.score));
     let html = '<div class="axis"></div>';
-    for (const t of TICKS) {
-      const x = pos(t);
-      const lbl = t < 0 ? `${-t} BC` : t === 0 ? "AD 1" : String(t);
+    for (const tick of TICKS) {
+      const x = pos(tick);
+      const lbl = tick < 0 ? `${-tick} ${t.bc}` : tick === 0 ? t.tickZero : String(tick);
       const edge = x < 4 ? ";transform:none" : x > 96 ? ";transform:translateX(-100%)" : "";
       html += `<div class="tick" style="left:${x}%"></div><div class="tlabel" style="left:${x}%${edge}">${lbl}</div>`;
     }
     events.forEach((e, i) => {
       const h = 8 + Math.round((e.score / maxScore) * 34);
-      const yl = yearLabel(e.y);
-      html += `<button type="button" class="ev${i === topIdx ? " top" : ""}" style="left:${pos(e.y)}%;height:${h}px" data-i="${i}" aria-label="${esc(yl.n + (yl.era ? " " + yl.era : ""))}: ${esc(e.text.slice(0, 90))}" title="${esc(yl.n + (yl.era ? " " + yl.era : ""))} — ${esc(e.text.slice(0, 120))}"></button>`;
+      html += `<button type="button" class="ev${i === topIdx ? " top" : ""}" style="left:${pos(e.y)}%;height:${h}px" data-i="${i}" aria-label="${esc(yearsLabel(e.y))}: ${esc(e.text.slice(0, 90))}" title="${esc(yearsLabel(e.y))} — ${esc(e.text.slice(0, 120))}"></button>`;
     });
-    const t = events[topIdx];
-    const tl = yearLabel(t.y);
-    html += `<div class="flag" style="left:${Math.min(96, Math.max(4, pos(t.y)))}%">▼ ${esc(tl.n)}${tl.era ? " " + tl.era : ""}</div>`;
+    const top = events[topIdx];
+    html += `<div class="flag" style="left:${Math.min(96, Math.max(4, pos(top.y)))}%">▼ ${esc(yearsLabel(top.y))}</div>`;
     r.innerHTML = html;
-    const span = events.length ? `${events.length} events, ${yearsLabel(events[0].y)} to ${yearsLabel(events[events.length - 1].y)}` : "";
-    $("rulerNote").textContent = `${span} · taller marks = covered in more languages`;
+    $("rulerNote").textContent = events.length
+      ? t.rulerNote(events.length, yearsLabel(events[0].y), yearsLabel(events[events.length - 1].y))
+      : "";
   }
   const yearsLabel = (y) => { const l = yearLabel(y); return l.n + (l.era ? " " + l.era : ""); };
 
-  function centuryOf(y) {
-    if (y < 0) { const c = Math.floor((-y - 1) / 100) + 1; return `${ordinal(c)} century BC`; }
-    const c = Math.floor((y - 1) / 100) + 1;
-    return `${ordinal(c)} century`;
-  }
-  function ordinal(n) {
-    const s = ["th", "st", "nd", "rd"], v = n % 100;
-    return n + (s[(v - 20) % 10] || s[v] || s[0]);
-  }
-
   function renderList(events, topIdx, pickIdx) {
+    const t = T();
     const maxScore = Math.max(1, ...events.map((e) => e.score));
     let idx = events.map((_, i) => i);
     if (state.curatedOnly) idx = idx.filter((i) => events[i].sel || i === topIdx);
@@ -563,17 +691,17 @@ footer p { margin: 0 0 8px; max-width: 60em; }
     let html = "", lastC = "";
     for (const i of idx) {
       const e = events[i];
-      const c = centuryOf(e.y);
+      const c = t.century(e.y);
       if (c !== lastC) { html += `<li class="century">${c}</li>`; lastC = c; }
       const yl = yearLabel(e.y);
-      const subj = e.main ? `<a href="${esc(e.main.url)}" target="_blank" rel="noopener">${esc(e.text)}</a>` : esc(e.text);
-      const badge = i === topIdx ? `<span class="badge">★ Headline</span>` : e.sel ? `<span class="badge" style="color:var(--accent)">Curated</span>` : "";
+      const subj = e.main ? `<a href="${esc(e.main.url)}" data-wt="${esc(e.main.t)}" target="_blank" rel="noopener">${esc(e.text)}</a>` : esc(e.text);
+      const badge = i === topIdx ? `<span class="badge">★ ${t.headline}</span>` : e.sel ? `<span class="badge" style="color:var(--accent)">${t.curated}</span>` : "";
       const pct = Math.round((e.score / maxScore) * 100);
       html += `<li class="row${i === topIdx ? " is-top" : ""}" id="ev-${i}">
         <div class="y">${esc(yl.n)}${yl.era ? `<small>${yl.era}</small>` : ""}</div>
-        <div class="t">${badge}${subj}</div>
-        <div class="reach">${e.score ? `${e.score} languages` : "—"}<div class="meter"><i style="width:${pct}%"></i></div>
-          ${i !== topIdx ? `<button type="button" class="promote" data-i="${i}">Make headline</button>` : i !== pickIdx ? `<button type="button" class="promote" data-reset="1">Restore pick</button>` : ""}
+        <div class="t">${badge}<span lang="en">${subj}</span></div>
+        <div class="reach">${e.score ? t.langs(e.score) : "—"}<div class="meter"><i style="width:${pct}%"></i></div>
+          ${i !== topIdx ? `<button type="button" class="promote" data-i="${i}">${t.makeHeadline}</button>` : i !== pickIdx ? `<button type="button" class="promote" data-reset="1">${t.restorePick}</button>` : ""}
         </div>
       </li>`;
     }
@@ -593,6 +721,14 @@ footer p { margin: 0 0 8px; max-width: 60em; }
   });
   $("dateLabel").addEventListener("click", () => {
     try { $("dateInput").showPicker(); } catch {}
+  });
+  $("lang").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-lang]");
+    if (!b || b.dataset.lang === state.lang) return;
+    state.lang = b.dataset.lang;
+    store.set("dl.lang", state.lang);
+    applyLang();
+    render();
   });
   $("fCurated").addEventListener("click", () => { state.curatedOnly = !state.curatedOnly; store.set("dl.curated", state.curatedOnly ? "1" : "0"); render(); });
   $("sOld").addEventListener("click", () => { state.newestFirst = false; store.set("dl.newest", "0"); render(); });
@@ -633,6 +769,7 @@ footer p { margin: 0 0 8px; max-width: 60em; }
     return mm >= 1 && mm <= 12 && dd >= 1 && dd <= daysIn(mm) ? { m: mm, d: dd } : null;
   }
 
+  applyLang();
   const start = parseHash() || { m: now.getMonth() + 1, d: now.getDate() };
   go(start.m, start.d, { push: false });
 })();
