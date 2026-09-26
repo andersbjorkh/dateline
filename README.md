@@ -11,13 +11,14 @@ For any date, Dateline shows the most important event that happened on that day 
 - The timeline ruler places every event of the date by year; click a mark to jump to its entry.
 - **Curated only** hides everything except Wikipedia's featured "selected" events. **Oldest first** / **Newest first** sets the list order. Both choices are remembered in `localStorage`.
 - **Make headline** promotes any event to the top for the current visit; **Restore pick** puts the editorial pick back.
+- **EN / NO** switches the interface between English and Norwegian (bokmål). The first visit follows the browser language, and the choice is remembered in `localStorage`. Event text stays in English, since Wikipedia's feed has no Norwegian edition, but in Norwegian mode article links go to no.wikipedia.org when a Norwegian article exists.
 - Light and dark themes follow the system setting, and animations respect reduced-motion preferences.
 
 ## How it works
 
 - `data/MM.json` holds one month of events from Wikipedia's [On this day](https://api.wikimedia.org/wiki/Feed_API/Reference/On_this_day) feed, deduplicated. Each event carries a score: the number of Wikipedia editions with an article on its main subject (from Wikidata sitelinks).
 - The headline for each date is an editorial pick stored in `picks.json`. Popularity signals alone kept choosing articles like "World War II" or a country page, so `shortlist.py` narrows each date to about 15 candidates and the headline is picked by hand from those. A date without a pick falls back to the highest score, with a small boost for curated events.
-- Only the headline's image is kept, resized to 300 px and inlined as a JPEG data URI, so the page makes no requests to Wikimedia at runtime.
+- Only the headline's image is kept, resized to 300 px and inlined as a JPEG data URI, so the page makes no requests to Wikimedia at runtime in English. In Norwegian, the page asks the English Wikipedia API (`prop=langlinks`) for the day's Norwegian article titles, a few batched requests per date. If the lookup fails, the English links stay.
 - `index.html` is a static page with no build step and no dependencies. It loads only the month it needs.
 
 ### Data format
